@@ -8,32 +8,42 @@ BODY = {
     'password': 'admin123456'
 }
 
-def send_post(url):
-    resp = SESSION.post(f"http://localhost:{PORT}/{url}", json=BODY)
+
+def send_post(url, body=None):
+    if body is None:
+        body = BODY
+
+    resp = SESSION.post(f"http://localhost:{PORT}/{url}", json=body)
 
     print('-' * 10)
-    print('headers', resp.headers)
-    print('cookies', resp.cookies)
     try:
-        print(resp.status_code, resp.json())
+        result = resp.json()
     except:
-        print(resp.status_code, resp.content)
+        result = resp.content.decode()
+    # print('headers', resp.headers)
+    # print('cookies', resp.cookies)
+    print(resp.status_code, result)
     print('-' * 10)
+    print()
+    return result
 
 
 def send_get(url):
     resp = SESSION.get(f"http://localhost:{PORT}/{url}")
 
     print('-' * 10)
-    print('headers', resp.headers)
-    print('cookies', resp.cookies)
     try:
-        print(resp.status_code, resp.json())
+        result = resp.json()
     except:
-        print(resp.status_code, resp.content)
+        result = resp.content.decode()
+    # print('headers', resp.headers)
+    # print('cookies', resp.cookies)
+    print(resp.status_code, result)
     print('-' * 10)
+    print()
+    return result
 
 
 # send_post('registration')
 # send_post('auth')
-send_get('api/asdasd')
+# send_get('api/asdasd')

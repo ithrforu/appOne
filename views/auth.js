@@ -5,6 +5,10 @@ const md5 = require('md5');
 // TODO валидация входных данных
 const authView = (req, res) => {
   const body = req.body;
+  if (body.login === undefined | body.password === undefined) {
+    res.status(400).json({error: 'Login or password are undefined'});
+    return
+  }
 
   const sql = "select * from user where login=? and password=?";
   const params = [body.login, md5(body.password)];

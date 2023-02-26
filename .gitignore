@@ -3,3 +3,4 @@ node_modules
 db.sqlite
 package-lock.json
 .pyc
+__pycache__/

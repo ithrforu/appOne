@@ -1,49 +1,48 @@
 import requests
 
-SESSION = requests.Session()
 
-PORT = 8080
-BODY = {
-    'login': 'admin3',
-    'password': 'admin123456'
-}
-
-
-def send_post(url, body=None):
-    if body is None:
-        body = BODY
-
-    resp = SESSION.post(f"http://localhost:{PORT}/{url}", json=body)
-
-    print('-' * 10)
-    try:
-        result = resp.json()
-    except:
-        result = resp.content.decode()
-    # print('headers', resp.headers)
-    # print('cookies', resp.cookies)
-    print(resp.status_code, result)
-    print('-' * 10)
-    print()
-    return result
+def border_print(func):
+    def wrapper(*args, **kwargs):
+        print('-' * 10)
+        result = func(*args, **kwargs)
+        print('-' * 10)
+        print()
+        return result
+    return wrapper
 
 
-def send_get(url):
-    resp = SESSION.get(f"http://localhost:{PORT}/{url}")
+class HttpSession:
+    def __init__(self, host, port):
+        self.hostname = f"http://{host}:{port}"
+        self.session = requests.Session()
 
-    print('-' * 10)
-    try:
-        result = resp.json()
-    except:
-        result = resp.content.decode()
-    # print('headers', resp.headers)
-    # print('cookies', resp.cookies)
-    print(resp.status_code, result)
-    print('-' * 10)
-    print()
-    return result
+    def __del__(self):
+        self.session.close()
 
+    @border_print
+    def get(self, url):
+        resp = self.session.get(f"{self.hostname}/{url}")
 
-# send_post('registration')
-# send_post('auth')
-# send_get('api/asdasd')
+        try:
+            result = resp.json()
+        except:
+            result = resp.content.decode()
+        # print('headers', resp.headers)
+        # print('cookies', resp.cookies)
+        print(resp.status_code, result)
+
+        return result
+
+    @border_print
+    def post(self, url, body=None):
+        resp = self.session.post(f"{self.hostname}/{url}", json=body)
+
+        try:
+            result = resp.json()
+        except:
+            result = resp.content.decode()
+        # print('headers', resp.headers)
+        # print('cookies', resp.cookies)
+        print(resp.status_code, result)
+
+        return result

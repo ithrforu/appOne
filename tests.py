@@ -1,27 +1,61 @@
-from postman import *
+from postman import HttpSession
+from unittest import TestCase
 
-
-BODY = {
-    'login': 'admin1',
-    'password': 'admin123456'
+HOST, PORT = 'localhost', 8080
+BODY_1 = {
+    'login': 'user1',
+    'password': 'user111111'
+}
+BODY_2 = {
+    'login': 'user2',
+    'password': 'user222222'
+}
+BODY_3 = {
+    'login': 'user3',
+    'password': 'user333333'
 }
 
 
-if __name__ == '__main__':
-    # index
-    assert send_get('') == 'Hello World!'
+class TestApi(TestCase):
+    """Класс с тестами API
+    
+    Команда терминала на запуск:
+        
+        python -m unittest tests.TestApi - все тесты
+        python -m unittest tests.TestApi.test_index - конкретный тест
+    """
 
-    # registration
-    send_post('registration', BODY)
+    def test_index(self):
+        s = HttpSession(HOST, PORT)
+        self.assertEqual(s.get(''), 'Hello World!')
 
-    # fail login
-    assert 'Login or password are undefined' in str(send_post('auth', {}))
+    def test_login(self):
+        s1 = HttpSession(HOST, PORT)
+        s2 = HttpSession(HOST, PORT)
 
-    # # fail api
-    assert send_get('api/1') == 'Unauthorized'
+        # registration
+        s1.post('registration', BODY_1)
+        s2.post('registration', BODY_2)
 
-    # success login
-    assert 'success' in str(send_post('auth', BODY))
+        with self.subTest('Fail'):
+            self.assertIn('Login or password are undefined', str(s1.post('auth', {})))
 
-    # success api
-    assert send_get('api/1') == 'Hello World!'
+        with self.subTest('Success'):
+            self.assertIn('success', str(s1.post('auth', BODY_1)))
+            self.assertIn('success', str(s2.post('auth', BODY_2)))
+
+    def test_api(self):
+        s1 = HttpSession(HOST, PORT)
+        s2 = HttpSession(HOST, PORT)
+        s3 = HttpSession(HOST, PORT)
+        # Регистрируем всех
+        s1.post('registration', BODY_1)
+        s2.post('registration', BODY_2)
+        s3.post('registration', BODY_3)
+        # Третий намеренно не авторизуется
+        s1.post('auth', BODY_1)
+        s2.post('auth', BODY_1)
+
+        self.assertEqual(s1.get('api/1'), 'Hello World!')
+        self.assertEqual(s2.get('api/1'), 'Hello World!')
+        self.assertEqual(s3.get('api/1'), 'Unauthorized')  # Проверяем наличие ошибки
